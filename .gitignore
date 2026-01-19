@@ -4,3 +4,7 @@
 *.session
 /data
 /logs
+/medical_warehouse/target
+/medical_warehouse/logs
+/medical_warehouse/dbt_packages
+
