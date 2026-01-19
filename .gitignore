@@ -2,5 +2,9 @@
 .vscode
 .venv
 *.session
-/data
-/logs
+data/
+logs/
+/medical_warehouse/target/
+/medical_warehouse/dbt_packages/
+__pycache__/
+*.pyc
