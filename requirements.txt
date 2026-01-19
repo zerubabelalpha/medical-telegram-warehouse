@@ -1,2 +1,6 @@
 python-dotenv
 telethon
+psycopg2-binary
+sqlalchemy
+dbt-postgres
+
