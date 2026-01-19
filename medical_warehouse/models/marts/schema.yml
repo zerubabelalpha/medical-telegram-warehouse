@@ -1,0 +1,108 @@
+version: 2
+
+models:
+  - name: dim_channels
+    description: Dimension table containing channel metadata and aggregated metrics
+    columns:
+      - name: channel_key
+        description: Surrogate key for the channel dimension
+        tests:
+          - unique
+          - not_null
+      - name: channel_name
+        description: Telegram channel username
+        tests:
+          - unique
+          - not_null
+      - name: channel_type
+        description: Classification of channel (Pharmaceutical, Cosmetics, Medical)
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Pharmaceutical', 'Cosmetics', 'Medical']
+      - name: first_post_date
+        description: Date of the first message posted in the channel
+      - name: last_post_date
+        description: Date of the most recent message posted in the channel
+      - name: total_posts
+        description: Total number of messages posted in the channel
+        tests:
+          - not_null
+      - name: avg_views
+        description: Average number of views per message in the channel
+
+  - name: dim_dates
+    description: Date dimension table for time-based analysis
+    columns:
+      - name: date_key
+        description: Surrogate key for the date dimension
+        tests:
+          - unique
+          - not_null
+      - name: full_date
+        description: The actual date
+        tests:
+          - unique
+          - not_null
+      - name: day_of_month
+        description: Day of the month (1-31)
+      - name: day_of_week
+        description: Day of the week (0=Sunday, 6=Saturday)
+      - name: day_name
+        description: Name of the day (Monday, Tuesday, etc.)
+      - name: week_of_year
+        description: Week number of the year
+      - name: month
+        description: Month number (1-12)
+      - name: month_name
+        description: Name of the month
+      - name: quarter
+        description: Quarter of the year (1-4)
+      - name: year
+        description: Year
+      - name: is_weekend
+        description: Boolean indicating if the date falls on a weekend
+
+  - name: fct_messages
+    description: Fact table containing one row per telegram message with foreign keys to dimensions
+    columns:
+      - name: message_id
+        description: Unique message identifier within a channel
+        tests:
+          - not_null
+      - name: channel_key
+        description: Foreign key to dim_channels
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_channels')
+                field: channel_key
+      - name: date_key
+        description: Foreign key to dim_dates
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_dates')
+                field: date_key
+      - name: message_text
+        description: Text content of the message
+      - name: message_length
+        description: Character length of the message text
+        tests:
+          - not_null
+      - name: view_count
+        description: Number of views the message received
+        tests:
+          - not_null
+      - name: forward_count
+        description: Number of times the message was forwarded
+        tests:
+          - not_null
+      - name: has_image
+        description: Boolean indicating if message has an associated image
+      - name: message_datetime
+        description: Timestamp when the message was posted
+        tests:
+          - not_null

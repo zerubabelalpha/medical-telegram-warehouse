@@ -1,0 +1,60 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Raw data loaded from Telegram scraper
+    database: medical_warehouse
+    schema: raw
+    tables:
+      - name: telegram_messages
+        description: Raw telegram messages from medical/pharmaceutical channels
+        columns:
+          - name: message_id
+            description: Unique message identifier within a channel
+          - name: channel_name
+            description: Telegram channel username
+          - name: message_date
+            description: Timestamp when the message was posted
+          - name: message_text
+            description: Text content of the message
+          - name: has_media
+            description: Boolean indicating if message contains media
+          - name: image_path
+            description: File path to downloaded image (if any)
+          - name: views
+            description: Number of views the message received
+          - name: forwards
+            description: Number of times the message was forwarded
+
+models:
+  - name: stg_telegram_messages
+    description: Cleaned and standardized telegram messages
+    columns:
+      - name: message_id
+        description: Unique message identifier within a channel
+        tests:
+          - not_null
+      - name: channel_name
+        description: Telegram channel username
+        tests:
+          - not_null
+      - name: message_datetime
+        description: Timestamp when the message was posted
+        tests:
+          - not_null
+      - name: message_date
+        description: Date when the message was posted
+      - name: message_text
+        description: Text content of the message (empty string if none)
+      - name: message_length
+        description: Character length of the message text
+      - name: has_media
+        description: Boolean indicating if message contains any media
+      - name: has_image
+        description: Boolean indicating if message has an image file
+      - name: image_path
+        description: File path to downloaded image (if any)
+      - name: view_count
+        description: Number of views (0 if null)
+      - name: forward_count
+        description: Number of forwards (0 if null)
