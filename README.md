@@ -1,99 +1,146 @@
-# Medical Telegram Data Warehouse
+## Medical Telegram Data Warehouse
 
-A robust data scraping pipeline designed to extract messages and images from specific medical and pharmaceutical Telegram channels and store them in a structured raw data lake.
+This project scrapes messages and images from selected medical and pharmaceutical Telegram channels, stores raw JSON in a local data lake, and builds a Postgres-backed analytical warehouse using dbt.
 
-## Project Structure
+##  Features
 
-```text
+- **Telegram Scraping** – Automated collection of messages and images from medical and healthcare Telegram channels  
+- **Data Lake Storage** – Raw JSON files organized by channel and date  
+- **Data Warehouse** – PostgreSQL analytics layer powered by dbt transformations  
+- **Automated Pipeline** – End-to-end flow from scraping to analysis-ready tables  
+- **Data Quality** – Built-in validation and testing at each stage  
+- **Documentation** – Auto-generated dbt docs with lineage and metrics  
+
+
+
+
+## Project Structure (summary)
+
+```
 medical-telegram-warehouse/
+├── .vscode/
+│   └── settings.json
 ├── .github/
 │   └── workflows/
-│       └── unittest.yml        # CI/CD pipeline for automated testing
-├── .vscode/
-│   └── settings.json           # VS Code project configurations
-├── data/                       # Local data lake (gitignored)
-│   └── raw/
-│       ├── images/             # Downloaded channel images
-│       │   └── {channel_name}/
-│       │       └── {message_id}.jpg
-│       └── telegram_messages/  # Scraped JSON messages
-│           └── {YYYY-MM-DD}/
-│               ├── {channel_name}.json
-│               └── _manifest.json
-├── logs/                       # Scraper execution logs
-│   └── scraper.log
-├── notebooks/                  # Experimental notebooks
-├── src/                        # Source code
-│   ├── datalake.py             # Data storage and partitioning logic
-│   └── scraper.py              # Telegram scraping and extraction logic
-├── tests/                      # Unit tests
-│   └── test_datalake.py        # Datalake logic verification
-├── .env                        # Environment variables (credentials)
-├── .gitignore                  # Git exclusion rules
-├── README.md                   # Project documentation
-└── requirements.txt            # Python dependencies
+│       └── unittests.yml
+├── .env               # Secrets (API keys, DB passwords) - DO NOT COMMIT
+├── .gitignore
+├── docker-compose.yml  # Container orchestration
+├── Dockerfile          # Python environment
+├── requirements.txt
+├── README.md
+├── data/
+├── medical_warehouse/            # dbt project
+│   ├── dbt_project.yml
+│   ├── profiles.yml
+│   ├── models/
+│   │   ├── staging/
+│   │   └── marts/
+│   └── tests/
+├── src/
+├── api/
+│   ├── __init__.py
+│   ├── main.py                   # FastAPI application
+│   ├── database.py               # Database connection
+│   └── schemas.py                # Pydantic models
+├── notebooks/
+│   ├── __init__.py
+├── tests/
+│   └── __init__.py
+└── scripts/
 ```
 
-## Setup Instructions
+##  Prerequisites
 
-### 1. Prerequisites
-- Python 3.8+
-- Telegram API Credentials (API ID and API Hash from [my.telegram.org](https://my.telegram.org))
+- Python **3.8+**
+- PostgreSQL **12+**
+- Telegram API credentials (for scraping)
+- Git
 
-### 2. Installation
-Clone the repository and install the required dependencies:
+---
+
+##  Installation
+
+### 1. Clone the repository
+
 ```bash
-python -m venv .venv
-# On Windows
-.venv\Scripts\activate
-# On Linux/macOS
-source .venv/bin/activate
+git clone https://github.com/zerubabelalpha/medical-telegram-warehouse.git
+cd medical-telegram-warehouse
+## Quickstart
 
+1. Create and activate a Python virtual environment:
+
+```bash
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# macOS / Linux
+source venv/bin/activate
+```
+
+2. Install dependencies:
+
+```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configuration
-Create/edit the `.env` file in the root directory and add your Telegram credentials:
-```env
+3. Configure environment variables (create `.env` in repo root):
+
+```text
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=your_db_password
+DB_NAME=medical_warehouse
+
+# Telegram credentials for scraper (if using scraper)
 TG_API_ID=your_api_id
 TG_API_HASH=your_api_hash
 TG_PHONE=+your_phone_number
 ```
 
-## Usage
+4. Create the Postgres database (if needed):
 
-### Running the Scraper
-To start the scraping process for the configured channels:
-```bash
-python src/scraper.py
+```powershell
+# from PowerShell (Postgres user must have privileges)
+psql -U postgres -c "CREATE DATABASE medical_warehouse;"
 ```
-**Note:** On the first execution, you will be prompted to enter a verification code sent to your Telegram account.
 
-### Targeted Channels
-The script currently scrapes:
-1. `CheMed123`
-2. `lobelia4cosmetics`
-3. `tikvahpharma`
+5. Load raw JSON into Postgres:
 
-### Data Extraction
-For each message, the pipeline extracts:
-- `message_id`
-- `channel_name`
-- `message_date`
-- `message_text`
-- `has_media`
-- `image_path`
-- `views`
-- `forwards`
+```powershell
+python scripts\load_to_postgres.py
+```
 
-## Testing
-Run the automated test suite using:
-```bash
+6. dbt: install packages, build models, and run tests (from `medical_warehouse` directory):
+
+```powershell
+cd medical_warehouse
+# install dbt packages listed in packages.yml
+dbt deps
+# build models
+dbt run
+# run dbt tests
+dbt test
+# generate and serve docs
+dbt docs generate
+dbt docs serve
+```
+
+Notes:
+- `medical_warehouse/profiles.yml` configures dbt connection targets; you can also set connection values via environment variables.
+- If you remove `medical_warehouse/target/` or `medical_warehouse/dbt_packages/`, restore them with `dbt run` and `dbt deps` respectively.
+
+
+
+## Tests
+
+- Python unit tests:
+
+```powershell
 python -m unittest discover tests
 ```
 
-## Features
-- **Partitioned Data Lake**: Scalable storage structure organized by date and channel.
-- **Automated Image Handling**: Detects and downloads images mentioned in messages.
-- **Robust Logging**: Comprehensive tracking of scraped channels and error handling.
-- **CI/CD Integrated**: Automated unit testing on every push.
+- dbt data tests are run with `dbt test` (see above). Custom SQL tests live in `medical_warehouse/tests/`.
