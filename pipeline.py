@@ -44,7 +44,24 @@ def run_yolo_enrichment(scraper_output):
 @op
 def run_dbt_transformations(load_raw_output, yolo_output):
     """Executes dbt models to transform raw data into marts."""
-    result = subprocess.run(["dbt", "run", "--project-dir", DBT_PROJECT_DIR], capture_output=True, text=True)
+    """Executes dbt models to transform raw data into marts.
+
+    dbt expects a `profiles.yml` in a profiles directory (by default `~/.dbt`).
+    This project includes `medical_warehouse/profiles.yml`, so pass
+    `--profiles-dir` pointing at the project dir to ensure dbt finds it.
+    """
+    result = subprocess.run(
+        [
+            "dbt",
+            "run",
+            "--project-dir",
+            DBT_PROJECT_DIR,
+            "--profiles-dir",
+            DBT_PROJECT_DIR,
+        ],
+        capture_output=True,
+        text=True,
+    )
     if result.returncode != 0:
         raise Exception(f"dbt run failed: {result.stderr}")
     return result.stdout
