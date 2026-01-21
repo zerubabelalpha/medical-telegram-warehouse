@@ -67,10 +67,13 @@ models:
   - name: fct_messages
     description: Fact table containing one row per telegram message with foreign keys to dimensions
     columns:
+      - name: message_key
+        description: Unique surrogate key for the message
+        tests:
+          - unique
+          - not_null
       - name: message_id
         description: Unique message identifier within a channel
-        tests:
-          - not_null
       - name: channel_key
         description: Foreign key to dim_channels
         tests:
@@ -106,3 +109,21 @@ models:
         description: Timestamp when the message was posted
         tests:
           - not_null
+
+  - name: fct_image_detections
+    description: Fact table for image detections linked to messages
+    columns:
+      - name: message_key
+        description: Foreign key to fct_messages
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_messages')
+                field: message_key
+      - name: message_id
+      - name: channel_key
+      - name: date_key
+      - name: detected_class
+      - name: confidence_score
+      - name: image_category

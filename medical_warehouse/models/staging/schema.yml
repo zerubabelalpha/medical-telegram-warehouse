@@ -8,6 +8,13 @@ sources:
     tables:
       - name: telegram_messages
         description: Raw telegram messages from medical/pharmaceutical channels
+        freshness:
+          warn_after:
+            count: 1
+            period: day
+          error_after:
+            count: 2
+            period: day
         columns:
           - name: message_id
             description: Unique message identifier within a channel
@@ -26,10 +33,24 @@ sources:
           - name: forwards
             description: Number of times the message was forwarded
 
+      - name: yolo_detections
+        description: Object detection results from YOLOv8
+        columns:
+          - name: message_id
+          - name: channel_name
+          - name: detected_class
+          - name: confidence_score
+          - name: image_category
+
 models:
   - name: stg_telegram_messages
     description: Cleaned and standardized telegram messages
     columns:
+      - name: message_key
+        description: Unique surrogate key (MD5 hash of message_id and channel_name)
+        tests:
+          - unique
+          - not_null
       - name: message_id
         description: Unique message identifier within a channel
         tests:
@@ -58,3 +79,17 @@ models:
         description: Number of views (0 if null)
       - name: forward_count
         description: Number of forwards (0 if null)
+
+  - name: stg_yolo_detections
+    description: Staging model for YOLO detection results
+    columns:
+      - name: message_key
+        description: Unique surrogate key for junction to messages
+        tests:
+          - unique
+          - not_null
+      - name: message_id
+      - name: channel_name
+      - name: detected_class
+      - name: confidence_score
+      - name: image_category

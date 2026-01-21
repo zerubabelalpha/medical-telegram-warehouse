@@ -2,9 +2,12 @@
 .vscode
 .venv
 *.session
-data/
-logs/
+data/raw
+data/*.csv
+logs/*.log
 /medical_warehouse/target/
 /medical_warehouse/dbt_packages/
+/medical_warehouse/logs/
 __pycache__/
 *.pyc
+yolov8n.pt

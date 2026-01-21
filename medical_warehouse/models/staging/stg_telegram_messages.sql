@@ -8,6 +8,7 @@ WITH source AS (
 cleaned AS (
     SELECT
         -- Primary keys
+        {{ dbt_utils.generate_surrogate_key(['message_id', 'channel_name']) }} AS message_key,
         message_id,
         channel_name,
         
@@ -20,7 +21,11 @@ cleaned AS (
         LENGTH(COALESCE(message_text, '')) AS message_length,
         
         -- Media
-        has_media,
+        CASE
+            WHEN lower(CAST(has_media AS TEXT)) IN ('true','1','count', 't') THEN TRUE
+            ELSE FALSE
+        END AS has_media,
+        
         CASE 
             WHEN image_path IS NOT NULL AND image_path != '' THEN TRUE
             ELSE FALSE
@@ -43,7 +48,13 @@ cleaned AS (
       -- Filter out empty messages without media
       AND (
           (message_text IS NOT NULL AND message_text != '')
-          OR has_media = TRUE
+          OR COALESCE(
+              CASE
+                  WHEN lower(CAST(has_media AS TEXT)) IN ('true','1','count', 't') THEN TRUE
+                  ELSE FALSE
+              END,
+              FALSE
+          ) = TRUE
       )
 )
 
