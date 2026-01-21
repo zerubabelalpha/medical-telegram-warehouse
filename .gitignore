@@ -1,5 +1,4 @@
 .env
-.vscode
 .venv
 *.session
 data/raw
@@ -11,3 +10,4 @@ logs/*.log
 __pycache__/
 *.pyc
 yolov8n.pt
+.tmp_dagster_home_*

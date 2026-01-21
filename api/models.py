@@ -4,7 +4,7 @@ from .database import Base
 
 class Channel(Base):
     __tablename__ = "dim_channels"
-    __table_args__ = {"schema": "marts"}
+    __table_args__ = {"schema": "public_marts"}
 
     channel_key = Column(String, primary_key=True, index=True)
     channel_name = Column(String, unique=True, index=True, nullable=False)
@@ -14,11 +14,15 @@ class Channel(Base):
     total_posts = Column(Integer)
     avg_views = Column(Float)
 
-    messages = relationship("Message", back_populates="channel")
+    messages = relationship(
+        "Message", 
+        back_populates="channel",
+        primaryjoin="Channel.channel_key == Message.channel_key"
+    )
 
 class DateDim(Base):
     __tablename__ = "dim_dates"
-    __table_args__ = {"schema": "marts"}
+    __table_args__ = {"schema": "public_marts"}
 
     date_key = Column(Integer, primary_key=True, index=True)
     full_date = Column(Date, unique=True, index=True, nullable=False)
@@ -34,13 +38,13 @@ class DateDim(Base):
 
 class Message(Base):
     __tablename__ = "fct_messages"
-    __table_args__ = {"schema": "marts"}
+    __table_args__ = {"schema": "public_marts"}
 
     message_key = Column(String, primary_key=True, index=True)
     message_id = Column(Integer)
     channel_name = Column(String)
-    channel_key = Column(String, ForeignKey("marts.dim_channels.channel_key"))
-    date_key = Column(Integer, ForeignKey("marts.dim_dates.date_key"))
+    channel_key = Column(String, ForeignKey("public_marts.dim_channels.channel_key"))
+    date_key = Column(Integer, ForeignKey("public_marts.dim_dates.date_key"))
     message_text = Column(Text)
     message_length = Column(Integer)
     view_count = Column(Integer)
@@ -48,12 +52,20 @@ class Message(Base):
     has_image = Column(Boolean)
     message_datetime = Column(DateTime)
 
-    channel = relationship("Channel", back_populates="messages")
-    detections = relationship("ImageDetection", back_populates="message")
+    channel = relationship(
+        "Channel", 
+        back_populates="messages",
+        primaryjoin="Message.channel_key == Channel.channel_key"
+    )
+    detections = relationship(
+        "ImageDetection", 
+        back_populates="message",
+        primaryjoin="Message.message_key == ImageDetection.message_key"
+    )
 
 class ImageDetection(Base):
     __tablename__ = "fct_image_detections"
-    __table_args__ = {"schema": "marts"}
+    __table_args__ = {"schema": "public_marts"}
 
     # fct_image_detections doesn't have a specific primary key in the schema.yml
     # but SQLAlchemy needs one. I'll use message_key and detected_class as composite key if needed,
@@ -62,7 +74,7 @@ class ImageDetection(Base):
     
     # For now, let's treat message_key + detected_class as a primary key or just add an ID if possible.
     # If dbt doesn't have a PK, I might have to use a composite one.
-    message_key = Column(String, ForeignKey("marts.fct_messages.message_key"), primary_key=True)
+    message_key = Column(String, ForeignKey("public_marts.fct_messages.message_key"), primary_key=True)
     detected_class = Column(String, primary_key=True)
     message_id = Column(Integer)
     channel_key = Column(String)
@@ -70,4 +82,8 @@ class ImageDetection(Base):
     confidence_score = Column(Float)
     image_category = Column(String)
 
-    message = relationship("Message", back_populates="detections")
+    message = relationship(
+        "Message", 
+        back_populates="detections",
+        primaryjoin="ImageDetection.message_key == Message.message_key"
+    )
