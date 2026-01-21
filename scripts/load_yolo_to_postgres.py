@@ -48,7 +48,7 @@ def create_table(conn):
 
 def load_csv(conn):
     if not os.path.exists(CSV_PATH):
-        print(f"✗ CSV file not found: {CSV_PATH}")
+        print(f"CSV file not found: {CSV_PATH}")
         return
 
     df = pd.read_csv(CSV_PATH)
@@ -71,7 +71,7 @@ def load_csv(conn):
         """
         execute_values(cur, insert_query, records)
         conn.commit()
-        print(f"✓ Loaded {len(records)} records into raw.yolo_detections")
+        print(f"Loaded {len(records)} records into raw.yolo_detections")
 
 def main():
     try:
@@ -80,7 +80,7 @@ def main():
         load_csv(conn)
         conn.close()
     except Exception as e:
-        print(f"✗ Error: {e}")
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
     main()

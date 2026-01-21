@@ -59,7 +59,7 @@ def create_schema_and_table(conn):
         """)
         
         conn.commit()
-        print("✓ Schema and table created successfully")
+        print("Schema and table created successfully")
 
 
 def load_json_files(conn):
@@ -70,7 +70,7 @@ def load_json_files(conn):
                   if not os.path.basename(f).startswith("_")]
     
     if not json_files:
-        print(f"⚠ No JSON files found in {DATA_PATH}")
+        print(f"No JSON files found in {DATA_PATH}")
         return
     
     print(f"Found {len(json_files)} JSON file(s) to load")
@@ -85,7 +85,7 @@ def load_json_files(conn):
                 messages = json.load(f)
             
             if not messages:
-                print(f"  ⚠ No messages in {os.path.basename(json_file)}")
+                print(f"No messages in {os.path.basename(json_file)}")
                 continue
             
             # Prepare data for insertion
@@ -114,10 +114,10 @@ def load_json_files(conn):
             execute_values(cur, insert_query, records)
             conn.commit()
             
-            print(f"  ✓ Loaded {len(records)} records")
+            print(f"Loaded {len(records)} records")
             total_records += len(records)
     
-    print(f"\n✓ Total records loaded: {total_records}")
+    print(f"\nTotal records loaded: {total_records}")
 
 
 def verify_load(conn):
@@ -125,7 +125,7 @@ def verify_load(conn):
     with conn.cursor() as cur:
         cur.execute("SELECT COUNT(*) FROM raw.telegram_messages;")
         count = cur.fetchone()[0]
-        print(f"\n✓ Verification: {count} total records in raw.telegram_messages")
+        print(f"\nVerification: {count} total records in raw.telegram_messages")
         
         cur.execute("""
             SELECT channel_name, COUNT(*) as count 
@@ -149,7 +149,7 @@ def main():
         # Connect to database
         print(f"\nConnecting to database: {DB_NAME}@{DB_HOST}:{DB_PORT}")
         conn = get_connection()
-        print("✓ Connected successfully")
+        print(" Connected successfully")
         
         # Create schema and table
         print("\nCreating schema and table...")
@@ -165,19 +165,19 @@ def main():
         
         conn.close()
         print("\n" + "=" * 60)
-        print("✓ Data loading completed successfully!")
+        print("Data loading completed successfully!")
         print("=" * 60)
         
     except psycopg2.OperationalError as e:
-        print(f"\n✗ Database connection error: {e}")
+        print(f"\ Database connection error: {e}")
         print("\nPlease ensure:")
-        print("  1. PostgreSQL is running")
-        print("  2. Database credentials in .env are correct")
-        print("  3. Database 'medical_warehouse' exists")
+        print("PostgreSQL is running")
+        print("Database credentials in .env are correct")
+        print("Database 'medical_warehouse' exists")
         print("\nTo create the database, run:")
-        print(f"  psql -U {DB_USER} -c 'CREATE DATABASE {DB_NAME};'")
+        print(f"psql -U {DB_USER} -c 'CREATE DATABASE {DB_NAME};'")
     except Exception as e:
-        print(f"\n✗ Error: {e}")
+        print(f"\nError: {e}")
         raise
 
 
