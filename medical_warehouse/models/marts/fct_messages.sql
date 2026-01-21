@@ -2,19 +2,20 @@
 -- Links messages to dimension tables
 
 WITH messages AS (
-    SELECT * FROM stg_telegram_messages
+    SELECT * FROM {{ ref('stg_telegram_messages') }}
 ),
 
 channels AS (
-    SELECT * FROM dim_channels
+    SELECT * FROM {{ ref('dim_channels') }}
 ),
 
 dates AS (
-    SELECT * FROM dim_dates
+    SELECT * FROM {{ ref('dim_dates') }}
 )
 
 SELECT
     -- Fact identifiers
+    m.message_key,
     m.message_id,
     m.channel_name,
     
